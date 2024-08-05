@@ -28,7 +28,7 @@ func main() {
 		consumer.Teardown()
 	}()
 
-	if err = startConsumer(ctx, consumer); err != nil {
+	if err = consumer.start(ctx); err != nil {
 		log.Infof("finished consumer %v", err)
 	}
 

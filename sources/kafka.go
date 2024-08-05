@@ -46,13 +46,13 @@ func NewKafkaConsumer(ctx context.Context, tlsConfigs ...*tls.Config) (kafkaCons
 
 	kConsumer.setReader(reader)
 
-	log.Debugf("Returning kafka store: %+v", kConsumer)
+	log.Infof("Returning kafka consumer: %+v", kConsumer)
 
 	return kConsumer, nil
 }
 
 func (consumer kafkaConsumer) Teardown() {
-	log.Printf("Tearing down kafka store")
+	log.Printf("Tearing down kafka connection")
 	consumer.reader.Close()
 }
 
@@ -66,8 +66,6 @@ func (consumer kafkaConsumer) GetRecord(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	fmt.Printf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 
 	return string(m.Value), nil
 }
@@ -102,7 +100,7 @@ func (cfg *kafkaConfig) setTLS(tlsCfg *tls.Config) {
 // return a kafka connection handle
 func (cfg *kafkaConfig) getKafkaReader() (*kafka.Reader, error) {
 
-	log.Debugf("Connecting to kafka\n%+v", cfg)
+	log.Infof("Connecting to kafka\n%+v", cfg)
 
 	dialer := &kafka.Dialer{
 		Timeout:   0,
@@ -129,7 +127,7 @@ func (cfg *kafkaConfig) getKafkaReader() (*kafka.Reader, error) {
 
 	r := kafka.NewReader(rc)
 
-	log.Debugf("Success")
+	log.Infof("Success")
 
 	return r, nil
 

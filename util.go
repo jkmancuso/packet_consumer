@@ -42,13 +42,13 @@ func setLogger() {
 
 }
 
-func getCmdLineParams() map[string]string {
-	params := make(map[string]string)
+func getCmdLineParams() map[string]*string {
+	params := make(map[string]*string)
 
-	params["consumer"] = *flag.String("consumer", "kafka", "")
+	params["consumer"] = flag.String("consumer", "kafka", "")
+	params["influxdb"] = flag.String("consumer", "influxdb", "")
 
 	flag.Parse()
 
-	log.Debugf("Get flags: %+v", params)
 	return params
 }

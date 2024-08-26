@@ -3,6 +3,7 @@ package destinations
 import (
 	"context"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -56,6 +57,14 @@ func (s InfluxStore) isOnline(ctx context.Context) bool {
 		return true
 	}
 
+	if err != nil {
+		if strings.Contains(err.Error(), "tls: failed to verify certificate") {
+			log.Println("Influx is online but with self signed crt")
+			return true
+		}
+
+	}
+
 	log.Printf("Influx is NOT online: %v", err)
 	return false
 }
@@ -78,17 +87,31 @@ func (s *InfluxStore) setReader(r api.QueryAPI) {
 
 func newInfluxCfg() Config {
 
-	token := os.Getenv("INFLUX_TOKEN")
 	url := os.Getenv("INFLUX_URL")
 	org := os.Getenv("INFLUX_ORG")
 	bucket := os.Getenv("INFLUX_BUCKET")
 
-	return Config{
+	//this needs to be in your ENV variables either in your
+	//OS, container, or supporting application
+	token := os.Getenv("INFLUX_TOKEN")
+
+	if len(url) == 0 ||
+		len(org) == 0 ||
+		len(bucket) == 0 ||
+		len(token) == 0 {
+		log.Errorf("!Missing influx variable!")
+	}
+
+	cfg := Config{
 		URL:    url,
 		token:  token,
 		org:    org,
 		bucket: bucket,
 	}
+
+	log.Debugf("Influx Config: %+v", cfg)
+
+	return cfg
 }
 
 func (s InfluxStore) SendRecord(ctx context.Context, payload string) error {

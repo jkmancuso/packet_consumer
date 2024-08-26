@@ -46,7 +46,7 @@ func getCmdLineParams() map[string]*string {
 	params := make(map[string]*string)
 
 	params["consumer"] = flag.String("consumer", "kafka", "")
-	params["influxdb"] = flag.String("consumer", "influxdb", "")
+	params["destination"] = flag.String("destination", "influxdb", "")
 
 	flag.Parse()
 

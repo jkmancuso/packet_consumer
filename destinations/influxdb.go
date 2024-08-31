@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -114,6 +115,12 @@ func newInfluxCfg() Config {
 	return cfg
 }
 
-func (s InfluxStore) SendRecord(ctx context.Context, payload string) error {
-	return nil
+func (s InfluxStore) SendRecord(ctx context.Context,
+	measurement string,
+	tags map[string]string,
+	fields map[string]interface{}) error {
+
+	p := influxdb2.NewPoint(measurement, tags, fields, time.Now())
+	err := s.Writer.WritePoint(ctx, p)
+	return err
 }

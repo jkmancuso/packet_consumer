@@ -60,14 +60,14 @@ func (consumer *kafkaConsumer) setReader(r *kafka.Reader) {
 	consumer.reader = r
 }
 
-func (consumer kafkaConsumer) GetRecord(ctx context.Context) (string, error) {
+func (consumer kafkaConsumer) GetRecord(ctx context.Context) ([]byte, error) {
 	m, err := consumer.reader.ReadMessage(ctx)
 
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
 
-	return string(m.Value), nil
+	return m.Value, nil
 }
 
 func newKafkaCfg(_ context.Context) kafkaConfig {

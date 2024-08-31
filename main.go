@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"os/signal"
 
@@ -9,6 +10,8 @@ import (
 	"github.com/jkmancuso/packet_consumer/sources"
 	log "github.com/sirupsen/logrus"
 )
+
+const measurement = "ip"
 
 func main() {
 
@@ -45,7 +48,7 @@ func main() {
 func Start(ctx context.Context, c sources.Consumer, d destinations.Destination) error {
 
 	var err error
-	var record string
+	var record []byte
 
 	for {
 
@@ -53,6 +56,21 @@ func Start(ctx context.Context, c sources.Consumer, d destinations.Destination) 
 		log.Printf("message %v\n", record)
 
 		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		ipEntry := ipEntry{}
+
+		if err = json.Unmarshal(record, &ipEntry); err != nil {
+			log.Error(err)
+			return err
+		}
+
+		err = d.SendRecord(ctx, measurement, ipEntry.getTags(), ipEntry.getFields())
+
+		if err != nil {
+			log.Error(err)
 			return err
 		}
 	}

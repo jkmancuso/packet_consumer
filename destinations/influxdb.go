@@ -88,26 +88,27 @@ func (s *InfluxStore) setReader(r api.QueryAPI) {
 
 func newInfluxCfg() Config {
 
-	url := os.Getenv("INFLUX_URL")
-	org := os.Getenv("INFLUX_ORG")
-	bucket := os.Getenv("INFLUX_BUCKET")
+	params := make(map[string]string)
+
+	params["url"] = os.Getenv("INFLUX_URL")
+	params["org"] = os.Getenv("INFLUX_ORG")
+	params["bucket"] = os.Getenv("INFLUX_BUCKET")
 
 	//this needs to be in your ENV variables either in your
 	//OS, container, or supporting application
-	token := os.Getenv("INFLUX_TOKEN")
+	params["token"] = os.Getenv("INFLUX_TOKEN")
 
-	if len(url) == 0 ||
-		len(org) == 0 ||
-		len(bucket) == 0 ||
-		len(token) == 0 {
-		log.Errorf("!Missing influx variable!")
+	for k, v := range params {
+		if len(v) == 0 {
+			log.Errorf("!Missing influx variable %v!", k)
+		}
 	}
 
 	cfg := Config{
-		URL:    url,
-		token:  token,
-		org:    org,
-		bucket: bucket,
+		URL:    params["url"],
+		token:  params["token"],
+		org:    params["org"],
+		bucket: params["bucket"],
 	}
 
 	log.Debugf("Influx Config: %+v", cfg)

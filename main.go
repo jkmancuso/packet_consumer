@@ -53,7 +53,7 @@ func Start(ctx context.Context, c sources.Consumer, d destinations.Destination) 
 	for {
 
 		record, err = c.GetRecord(ctx)
-		log.Printf("message %v\n", record)
+		log.Printf("message %v\n", string(record))
 
 		if err != nil {
 			log.Error(err)

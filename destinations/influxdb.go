@@ -2,6 +2,7 @@ package destinations
 
 import (
 	"context"
+	"crypto/tls"
 	"os"
 	"strings"
 	"time"
@@ -28,7 +29,11 @@ type InfluxStore struct {
 
 func NewInfluxStore(ctx context.Context) InfluxStore {
 	config := newInfluxCfg()
-	client := influxdb2.NewClient(config.URL, config.token)
+	client := influxdb2.NewClientWithOptions(config.URL, config.token, influxdb2.DefaultOptions().
+		SetUseGZip(true).
+		SetTLSConfig(&tls.Config{
+			InsecureSkipVerify: true,
+		}))
 
 	store := InfluxStore{}
 

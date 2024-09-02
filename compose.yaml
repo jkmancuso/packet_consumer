@@ -1,9 +1,15 @@
 # compose.yaml
 services:
+  consumer:
+    image: consumer:latest
+    networks:
+      - apptier
   influxdb2:
     image: influxdb:2
     ports:
       - 8086:8086
+    networks:
+      - apptier
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb2-admin-username
@@ -35,3 +41,7 @@ secrets:
 volumes:
   influxdb2-data:
   influxdb2-config:
+networks:
+  apptier:
+    name: app-tier
+    external: true

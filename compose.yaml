@@ -2,8 +2,12 @@
 services:
   consumer:
     image: consumer:latest
+    environment:
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
     networks:
       - apptier
+    depends_on:
+      - influxdb2
   influxdb2:
     image: influxdb:2
     ports:

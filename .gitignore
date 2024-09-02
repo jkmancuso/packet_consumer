@@ -1,3 +1,4 @@
 bundle/
 kafka_jks/
 influxdb_ssl/
+.env.influxdb

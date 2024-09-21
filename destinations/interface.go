@@ -1,10 +1,14 @@
 package destinations
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Destination interface {
 	SendRecord(context.Context,
 		string,
 		map[string]string,
-		map[string]interface{}) error
+		map[string]interface{},
+		time.Time) error
 }

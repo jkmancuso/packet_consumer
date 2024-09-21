@@ -124,9 +124,10 @@ func newInfluxCfg() Config {
 func (s InfluxStore) SendRecord(ctx context.Context,
 	measurement string,
 	tags map[string]string,
-	fields map[string]interface{}) error {
+	fields map[string]interface{},
+	ingestTime time.Time) error {
 
-	p := influxdb2.NewPoint(measurement, tags, fields, time.Now())
+	p := influxdb2.NewPoint(measurement, tags, fields, ingestTime)
 	err := s.Writer.WritePoint(ctx, p)
 	return err
 }

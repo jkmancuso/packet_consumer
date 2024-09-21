@@ -1,6 +1,9 @@
 package main
 
+import "time"
+
 type ipEntry struct {
+	Time   time.Time
 	Src    ipInfo
 	Dst    ipInfo
 	Length int
@@ -28,10 +31,12 @@ func (i ipEntry) getFields() map[string]interface{} {
 	return map[string]interface{}{"size": i.Length}
 }
 
+func (i ipEntry) getTime() time.Time {
+
+	return i.Time
+}
+
 /*
 SAMPLE
-{"Src":{"Ipv4":"142.250.72.99","DNS":"www.gstatic.com"},"Dst":{"Ipv4":"192.168.7.249","DNS":""},"Length":1278}
-{"Src":{"Ipv4":"142.250.72.99","DNS":"www.gstatic.com"},"Dst":{"Ipv4":"192.168.7.249","DNS":""},"Length":1278}
-{"Src":{"Ipv4":"142.250.72.99","DNS":"www.gstatic.com"},"Dst":{"Ipv4":"192.168.7.249","DNS":""},"Length":1278}
-{"Src":{"Ipv4":"142.250.72.99","DNS":"www.gstatic.com"},"Dst":{"Ipv4":"192.168.7.249","DNS":""},"Length":1278}
+{"Time": "", "Src":{"Ipv4":"142.250.72.99","DNS":"www.gstatic.com"},"Dst":{"Ipv4":"192.168.7.249","DNS":""},"Length":1278}
 */

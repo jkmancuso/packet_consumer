@@ -67,7 +67,11 @@ func Start(ctx context.Context, c sources.Consumer, d destinations.Destination) 
 			return err
 		}
 
-		err = d.SendRecord(ctx, measurement, ipEntry.getTags(), ipEntry.getFields())
+		err = d.SendRecord(ctx,
+			measurement,
+			ipEntry.getTags(),
+			ipEntry.getFields(),
+			ipEntry.getTime())
 
 		if err != nil {
 			log.Error(err)

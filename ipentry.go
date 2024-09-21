@@ -38,5 +38,5 @@ func (i ipEntry) getTime() time.Time {
 
 /*
 SAMPLE
-{"Time": "", "Src":{"Ipv4":"142.250.72.99","DNS":"www.gstatic.com"},"Dst":{"Ipv4":"192.168.7.249","DNS":""},"Length":1278}
+{"Time": "2024-09-21T17:48:58.283731821Z", "Src":{"Ipv4":"142.250.72.99","DNS":"www.gstatic.com"},"Dst":{"Ipv4":"192.168.7.249","DNS":""},"Length":1278}
 */

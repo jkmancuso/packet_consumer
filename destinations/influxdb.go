@@ -3,6 +3,7 @@ package destinations
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -14,10 +15,11 @@ import (
 )
 
 type Config struct {
-	URL    string
-	token  string
-	org    string
-	bucket string
+	URL              string
+	token            string
+	org              string
+	bucketRaw        string
+	bucketAggregated string
 }
 
 type InfluxStore struct {
@@ -44,7 +46,7 @@ func NewInfluxStore(ctx context.Context) InfluxStore {
 		return InfluxStore{}
 	}
 
-	writer := client.WriteAPIBlocking(store.Cfg.org, store.Cfg.bucket)
+	writer := client.WriteAPIBlocking(store.Cfg.org, store.Cfg.bucketRaw)
 
 	store.setWriter(writer)
 
@@ -97,7 +99,8 @@ func newInfluxCfg() Config {
 
 	params["url"] = os.Getenv("INFLUX_URL")
 	params["org"] = os.Getenv("INFLUX_ORG")
-	params["bucket"] = os.Getenv("INFLUX_BUCKET")
+	params["bucket_raw"] = os.Getenv("INFLUX_BUCKET_RAW")
+	params["bucket_aggregated"] = os.Getenv("INFLUX_BUCKET_AGGREGATED")
 
 	//this needs to be in your ENV variables either in your
 	//OS, container, or supporting application
@@ -110,10 +113,11 @@ func newInfluxCfg() Config {
 	}
 
 	cfg := Config{
-		URL:    params["url"],
-		token:  params["token"],
-		org:    params["org"],
-		bucket: params["bucket"],
+		URL:              params["url"],
+		token:            params["token"],
+		org:              params["org"],
+		bucketRaw:        params["bucket_raw"],
+		bucketAggregated: params["bucket_aggregated"],
 	}
 
 	log.Debugf("Influx Config: %+v", cfg)
@@ -130,4 +134,42 @@ func (s InfluxStore) SendRecord(ctx context.Context,
 	p := influxdb2.NewPoint(measurement, tags, fields, ingestTime)
 	err := s.Writer.WritePoint(ctx, p)
 	return err
+}
+
+// will be run as a gofunc
+func (s InfluxStore) Aggregate(ctx context.Context,
+	start time.Time,
+	end time.Time,
+	aggChannel chan string) {
+
+	//check if there is an existing job already running
+	//return if there is and wait for next run in a minute
+	select {
+	case <-aggChannel:
+		log.Println("Aggregate already in progress")
+		return
+	default:
+		aggChannel <- "aggregating"
+		log.Println("Starting new aggregate job")
+
+		//copy downsampled data into a new bucket
+		//raw bucket has a retention policy to clean stale data
+		query := `from (bucket: "%s")
+				|> range(start: -2m)
+				|> window(every: 1m)
+				|> sum()
+				|> duplicate(column: "_stop", as: "_time")
+				|> window(every: inf)
+				|> to(bucket: "%s")`
+
+		query = fmt.Sprintf(query, s.Cfg.bucketRaw, s.Cfg.bucketAggregated)
+
+		//dont need the result of the query as long as no err
+		_, err := s.Reader.Query(ctx, query)
+
+		if err != nil {
+			log.Panic(err)
+		}
+	}
+
 }

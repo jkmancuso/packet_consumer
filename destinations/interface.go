@@ -11,4 +11,9 @@ type Destination interface {
 		map[string]string,
 		map[string]interface{},
 		time.Time) error
+
+	Aggregate(context.Context,
+		time.Time,
+		time.Time,
+		chan string)
 }

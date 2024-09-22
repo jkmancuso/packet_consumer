@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/jkmancuso/packet_consumer/destinations"
 	"github.com/jkmancuso/packet_consumer/sources"
@@ -49,6 +50,8 @@ func Start(ctx context.Context, c sources.Consumer, d destinations.Destination) 
 
 	var err error
 	var record []byte
+	var prevTime time.Time
+	aggChan := make(chan string, 1)
 
 	for {
 
@@ -67,6 +70,11 @@ func Start(ctx context.Context, c sources.Consumer, d destinations.Destination) 
 			return err
 		}
 
+		//run every minute (except the first iteration)
+		if !prevTime.IsZero() && ipEntry.getTime().Minute() != prevTime.Minute() {
+			go d.Aggregate(ctx, prevTime, ipEntry.getTime(), aggChan)
+		}
+
 		err = d.SendRecord(ctx,
 			measurement,
 			ipEntry.getTags(),
@@ -77,6 +85,8 @@ func Start(ctx context.Context, c sources.Consumer, d destinations.Destination) 
 			log.Error(err)
 			return err
 		}
+
+		prevTime = ipEntry.getTime()
 	}
 
 }
